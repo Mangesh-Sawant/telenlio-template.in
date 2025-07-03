@@ -18,11 +18,17 @@ async def signup(user: UserCreate):
 
     user_id = str(uuid4())
     hashed_pwd = hash_password(user.password)
+
     user_data = {
         "id": user_id,
         "email": user.email,
-        "hashed_password": hashed_pwd
+        "hashed_password": hashed_pwd,
+        "name": user.name,
+        "contact": user.contact,
+        "surname": user.surname,
+        "field": user.field
     }
+
     await db.users.insert_one(user_data)
 
     return {"message": "User created", "user_id": user_id}
