@@ -1,3 +1,5 @@
+# FILE: app/api/templates.py
+
 from typing import List
 
 from app.core.deps import get_current_user, TokenData
@@ -8,7 +10,10 @@ from bson import ObjectId, errors
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
 
-router = APIRouter(prefix="/templates", tags=["Templates"])
+# --- THIS IS THE ONLY CHANGE ---
+# The prefix="/templates" has been removed from this line.
+router = APIRouter(tags=["Templates"])
+# -----------------------------
 
 
 def safe_object_id(id: str):
@@ -67,19 +72,17 @@ async def delete_template(template_id: str, current_user: TokenData = Depends(ge
 @router.patch("/{template_id}")
 async def update_template(
         template_id: str,
-        updates: dict,  # Accepts partial fields like {"title": "new title"}
+        updates: dict,
         current_user: TokenData = Depends(get_current_user)
 ):
     obj_id = safe_object_id(template_id)
     if not obj_id:
         raise HTTPException(status_code=400, detail="Invalid template ID format")
 
-    # Ensure the template belongs to the user
     template = await db.templates.find_one({"_id": obj_id, "user_id": str(current_user.user_id)})
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
 
-    # Clean input fields to avoid overwriting user_id or _id
     disallowed_fields = {"_id", "user_id"}
     for key in disallowed_fields:
         updates.pop(key, None)
